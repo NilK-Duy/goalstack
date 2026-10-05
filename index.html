@@ -4,7 +4,22 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>goalstack</title>
+    <meta
+      name="description"
+      content="Plan a goal by weight: set a start and a total duration, add weighted subtasks, and get a timeline with start and end dates for each one."
+    />
+    <title>GoalStack — weighted plans on a timeline</title>
+    <script>
+      // Applied before first paint so a dark-mode reload never flashes light.
+      try {
+        var stored = localStorage.getItem('goalstack:theme');
+        if (stored === 'light' || stored === 'dark') {
+          document.documentElement.dataset.theme = stored;
+        }
+      } catch (error) {
+        /* no stored preference: the stylesheet follows the OS setting */
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

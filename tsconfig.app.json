@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "ignoreDeprecations": "6.0",
     "target": "es2023",
-    "lib": ["ES2023", "DOM"],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "esnext",
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
+
+    /* `paths` without `baseUrl` resolves relative to this file, which keeps the
+       alias working without the deprecated option. */
     "paths": {
       "@/*": ["./src/*"]
     },
@@ -22,8 +23,10 @@
     "jsx": "react-jsx",
 
     /* Linting */
+    "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noUncheckedIndexedAccess": false,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },

@@ -1,15 +1,20 @@
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
-import path from 'path'
+import { fileURLToPath } from 'node:url';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config';
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([a-z]:)/i, '$1'))
-
-// https://vite.dev/config/
+// One config for dev, build and test — Vitest reads this file, so the `@` alias
+// can't drift between the app and its tests.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-})
+  test: {
+    // Everything under test is pure logic; no DOM needed.
+    environment: 'node',
+    include: ['src/**/*.test.ts'],
+  },
+});
