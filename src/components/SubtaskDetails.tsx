@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import type { Subtask } from '@/types';
 import { describeUrlHost, normaliseUrl } from '@/lib/url';
 import { useGoalStore } from '@/store/useGoalStore';
+import { useGoalId } from '@/store/goalIdContext';
 import { ExternalIcon, LinkIcon, NoteIcon, PlusIcon, TrashIcon } from './icons';
 
 /** Grows a textarea to fit its content so notes never sit in a tiny scroller. */
@@ -19,6 +20,7 @@ function useAutoSize(value: string) {
 }
 
 function LinkRow({ subtaskId, link }: { subtaskId: string; link: Subtask['links'][number] }) {
+  const goalId = useGoalId();
   const removeLink = useGoalStore((state) => state.removeLink);
 
   return (
@@ -41,7 +43,7 @@ function LinkRow({ subtaskId, link }: { subtaskId: string; link: Subtask['links'
       </span>
       <button
         type="button"
-        onClick={() => removeLink(subtaskId, link.id)}
+        onClick={() => removeLink(goalId, subtaskId, link.id)}
         className="gs-icon-btn gs-icon-btn-danger h-7 w-7"
         aria-label={`Remove link ${link.label}`}
       >
@@ -52,6 +54,7 @@ function LinkRow({ subtaskId, link }: { subtaskId: string; link: Subtask['links'
 }
 
 function AddLinkForm({ subtaskId }: { subtaskId: string }) {
+  const goalId = useGoalId();
   const addLink = useGoalStore((state) => state.addLink);
   const fieldId = useId();
   const [open, setOpen] = useState(false);
@@ -80,7 +83,10 @@ function AddLinkForm({ subtaskId }: { subtaskId: string }) {
       return;
     }
 
-    addLink(subtaskId, { label: label.trim() || describeUrlHost(normalised), url: normalised });
+    addLink(goalId, subtaskId, {
+      label: label.trim() || describeUrlHost(normalised),
+      url: normalised,
+    });
     setLabel('');
     setUrl('');
     setError(null);
@@ -146,6 +152,7 @@ function AddLinkForm({ subtaskId }: { subtaskId: string }) {
 }
 
 export function SubtaskDetails({ subtask }: { subtask: Subtask }) {
+  const goalId = useGoalId();
   const updateSubtask = useGoalStore((state) => state.updateSubtask);
   const titleId = useId();
   const notesId = useId();
@@ -163,7 +170,7 @@ export function SubtaskDetails({ subtask }: { subtask: Subtask }) {
         <input
           id={titleId}
           value={subtask.title}
-          onChange={(event) => updateSubtask(subtask.id, { title: event.target.value })}
+          onChange={(event) => updateSubtask(goalId, subtask.id, { title: event.target.value })}
           placeholder="What is this step?"
           className="gs-input font-medium"
         />
@@ -201,7 +208,7 @@ export function SubtaskDetails({ subtask }: { subtask: Subtask }) {
           id={notesId}
           ref={notesRef}
           value={subtask.notes}
-          onChange={(event) => updateSubtask(subtask.id, { notes: event.target.value })}
+          onChange={(event) => updateSubtask(goalId, subtask.id, { notes: event.target.value })}
           placeholder="What does done look like? Anything you need to remember…"
           className="gs-input min-h-[88px] leading-relaxed"
         />

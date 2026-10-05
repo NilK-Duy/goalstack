@@ -16,6 +16,7 @@ import {
 import type { Goal } from '@/types';
 import type { Timeline } from '@/lib/schedule';
 import { useGoalStore } from '@/store/useGoalStore';
+import { useGoalId } from '@/store/goalIdContext';
 import { SubtaskComposer } from './SubtaskComposer';
 import { TimelineCard } from './TimelineCard';
 import { GripIcon, WarningIcon } from './icons';
@@ -38,6 +39,7 @@ function EmptyState() {
 }
 
 export function TimelineView({ goal, timeline }: TimelineViewProps) {
+  const goalId = useGoalId();
   const reorderSubtasks = useGoalStore((state) => state.reorderSubtasks);
 
   const sensors = useSensors(
@@ -58,7 +60,7 @@ export function TimelineView({ goal, timeline }: TimelineViewProps) {
     if (from === -1 || to === -1) return;
 
     // The store holds the order; no local mirror to drift out of sync.
-    reorderSubtasks(arrayMove(ids, from, to));
+    reorderSubtasks(goalId, arrayMove(ids, from, to));
   };
 
   return (

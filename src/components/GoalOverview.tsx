@@ -4,12 +4,14 @@ import type { Timeline } from '@/lib/schedule';
 import { formatEnd, formatGoalDuration, formatInstant } from '@/lib/format';
 import { fromDateTimeInputValue, toDateTimeInputValue } from '@/lib/datetime';
 import { useGoalStore } from '@/store/useGoalStore';
-import { PencilIcon } from './icons';
+import { ConfirmButton } from './ConfirmButton';
+import { PencilIcon, TrashIcon } from './icons';
 import { UnitToggle } from './UnitToggle';
 
 interface GoalOverviewProps {
   goal: Goal;
   timeline: Timeline;
+  onDeleted(): void;
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -21,8 +23,9 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function GoalOverview({ goal, timeline }: GoalOverviewProps) {
+export function GoalOverview({ goal, timeline, onDeleted }: GoalOverviewProps) {
   const updateGoal = useGoalStore((state) => state.updateGoal);
+  const deleteGoal = useGoalStore((state) => state.deleteGoal);
   const fieldId = useId();
 
   const [editing, setEditing] = useState(false);
@@ -58,7 +61,7 @@ export function GoalOverview({ goal, timeline }: GoalOverviewProps) {
       return;
     }
 
-    updateGoal({
+    updateGoal(goal.id, {
       title,
       startISO: new Date(startMs).toISOString(),
       duration: { value, unit },
@@ -153,15 +156,26 @@ export function GoalOverview({ goal, timeline }: GoalOverviewProps) {
         <h1 className="flex-1 text-xl font-semibold tracking-tight break-words sm:text-2xl">
           {goal.title}
         </h1>
-        <button
-          type="button"
-          onClick={open}
-          className="gs-icon-btn"
-          aria-label="Edit goal details"
-          title="Edit goal details"
-        >
-          <PencilIcon size={16} />
-        </button>
+        <span className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={open}
+            className="gs-icon-btn"
+            aria-label="Edit goal details"
+            title="Edit goal details"
+          >
+            <PencilIcon size={16} />
+          </button>
+          <ConfirmButton
+            onConfirm={() => {
+              deleteGoal(goal.id);
+              onDeleted();
+            }}
+            ariaLabel="Delete this goal"
+            confirmLabel="Delete goal"
+            icon={<TrashIcon size={16} />}
+          />
+        </span>
       </div>
 
       <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">

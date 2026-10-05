@@ -221,4 +221,47 @@
   .gs-chip {
     @apply bg-inset text-muted inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
   }
+
+  /*
+   * The native dialog's UA styles (border, padding, fit-content sizing) are
+   * cleared so the panel inside owns the whole appearance. `inset: 0` with
+   * `margin: auto` centres it in the top layer on both axes.
+   */
+  .gs-dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(34rem, calc(100vw - 2rem));
+    max-height: calc(100svh - 2rem);
+    overflow-y: auto;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+  }
+
+  .gs-dialog::backdrop {
+    background: rgb(6 8 14 / 0.55);
+    backdrop-filter: blur(3px);
+  }
+
+  .gs-dialog[open] {
+    animation: gs-dialog-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .gs-dialog[open]::backdrop {
+    animation: gs-fade-in 180ms ease-out;
+  }
+
+  @keyframes gs-dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.985);
+    }
+  }
+
+  @keyframes gs-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
 }

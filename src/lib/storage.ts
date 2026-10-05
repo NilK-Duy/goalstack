@@ -2,11 +2,15 @@ import type { DurationUnit, Goal, Link, Subtask } from '@/types';
 import { createId } from './id';
 
 export const STORAGE_KEY = 'goalstack:state';
-export const STORAGE_VERSION = 2;
+export const STORAGE_VERSION = 3;
 
+/**
+ * Persisted shape. There is deliberately no "current goal" here: the URL owns
+ * which goal is on screen, so storing it too would give two sources of truth
+ * that could disagree after a back/forward navigation.
+ */
 export interface GoalState {
   goals: Goal[];
-  activeGoalId: string | null;
 }
 
 /**
@@ -19,7 +23,7 @@ export interface GoalRepository {
   save(state: GoalState): void;
 }
 
-export const emptyState: GoalState = { goals: [], activeGoalId: null };
+export const emptyState: GoalState = { goals: [] };
 
 const asString = (value: unknown, fallback = ''): string =>
   typeof value === 'string' ? value : fallback;
@@ -92,19 +96,15 @@ export function deserialiseState(serialised: string): GoalState {
 
   const envelope = parsed as Record<string, unknown>;
 
-  // v1 stored a single goal under `goal`; carry it forward as the active one.
+  // v1 stored a single goal under `goal`; v2 added `goals` alongside an
+  // `activeGoalId` that later versions simply ignore.
   const rawGoals = Array.isArray(envelope.goals)
     ? envelope.goals
     : envelope.goal
       ? [envelope.goal]
       : [];
 
-  const goals = rawGoals.map(normaliseGoal).filter((goal): goal is Goal => goal !== null);
-  const requestedActiveId = asString(envelope.activeGoalId) || null;
-  const activeGoalId =
-    goals.find((goal) => goal.id === requestedActiveId)?.id ?? goals[0]?.id ?? null;
-
-  return { goals, activeGoalId };
+  return { goals: rawGoals.map(normaliseGoal).filter((goal): goal is Goal => goal !== null) };
 }
 
 /**

@@ -1,32 +1,21 @@
-import { useMemo } from 'react';
-import { buildTimeline } from '@/lib/schedule';
-import { useActiveGoal, useGoalStore } from '@/store/useGoalStore';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
-import { GoalOverview } from '@/components/GoalOverview';
-import { GoalSetupForm } from '@/components/GoalSetupForm';
-import { TimelineView } from '@/components/TimelineView';
+import { GoalDetailPage } from '@/pages/GoalDetailPage';
+import { GoalsListPage } from '@/pages/GoalsListPage';
 
 export default function App() {
-  const goal = useActiveGoal();
-  const deleteActiveGoal = useGoalStore((state) => state.deleteActiveGoal);
-
-  // The schedule is derived, never stored, so dates cannot fall out of step
-  // with the weights, order or duration they came from.
-  const timeline = useMemo(() => (goal ? buildTimeline(goal) : null), [goal]);
-
   return (
     <div className="min-h-svh">
-      <AppHeader canDelete={goal !== null} onDelete={deleteActiveGoal} />
+      <AppHeader />
 
       <main className="mx-auto max-w-3xl px-4 pb-24 sm:px-6">
-        {goal && timeline ? (
-          <div className="grid gap-5 py-6 sm:py-8">
-            <GoalOverview goal={goal} timeline={timeline} />
-            <TimelineView goal={goal} timeline={timeline} />
-          </div>
-        ) : (
-          <GoalSetupForm />
-        )}
+        <Routes>
+          <Route path="/" element={<GoalsListPage />} />
+          <Route path="/goals/:goalId" element={<GoalDetailPage />} />
+          {/* Anything else is a mistyped or stale link; the list is the one
+              page that is always valid. */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
     </div>
   );

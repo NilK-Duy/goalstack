@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import type { Goal } from '@/types';
 import { createMemoryRepository, deserialiseState, emptyState } from './storage';
 
-const goalFixture = {
+const goalFixture: Goal = {
   id: 'goal-1',
   title: 'Ship the redesign',
   startISO: new Date(2026, 0, 14).toISOString(),
@@ -15,13 +16,11 @@ const goalFixture = {
 };
 
 describe('deserialiseState', () => {
-  it('restores a saved state and its active goal', () => {
-    const state = deserialiseState(
-      JSON.stringify({ version: 2, goals: [goalFixture], activeGoalId: 'goal-1' }),
-    );
+  it('restores saved goals', () => {
+    const state = deserialiseState(JSON.stringify({ version: 3, goals: [goalFixture] }));
 
     expect(state.goals).toHaveLength(1);
-    expect(state.activeGoalId).toBe('goal-1');
+    expect(state.goals[0].id).toBe('goal-1');
     expect(state.goals[0].title).toBe('Ship the redesign');
     expect(state.goals[0].subtasks.map((subtask) => subtask.weight)).toEqual([2, 3]);
   });
@@ -30,15 +29,16 @@ describe('deserialiseState', () => {
     const state = deserialiseState(JSON.stringify({ version: 1, goal: goalFixture }));
 
     expect(state.goals).toHaveLength(1);
-    expect(state.activeGoalId).toBe('goal-1');
+    expect(state.goals[0].id).toBe('goal-1');
   });
 
-  it('points at a real goal when the saved active id is dangling', () => {
+  it('ignores the v2 activeGoalId, now that the route owns selection', () => {
     const state = deserialiseState(
-      JSON.stringify({ goals: [goalFixture], activeGoalId: 'deleted-goal' }),
+      JSON.stringify({ version: 2, goals: [goalFixture], activeGoalId: 'deleted-goal' }),
     );
 
-    expect(state.activeGoalId).toBe('goal-1');
+    expect(state).toEqual({ goals: state.goals });
+    expect(state.goals).toHaveLength(1);
   });
 
   it('repairs missing and mistyped fields instead of discarding the goal', () => {
@@ -50,7 +50,6 @@ describe('deserialiseState', () => {
             subtasks: [{ weight: 'heavy' }, { title: 'Fine', weight: -3 }],
           },
         ],
-        activeGoalId: 'goal-2',
       }),
     );
 
@@ -105,7 +104,7 @@ describe('createMemoryRepository', () => {
     const repository = createMemoryRepository();
     expect(repository.load()).toEqual(emptyState);
 
-    const next = { goals: [], activeGoalId: null };
+    const next = { goals: [goalFixture] };
     repository.save(next);
     expect(repository.load()).toEqual(next);
   });

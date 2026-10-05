@@ -7,6 +7,18 @@ card that holds links and notes.
 
 Everything is stored in the browser — no account, no server.
 
+## Screens
+
+| Route             | What it is                                                                  |
+| ----------------- | --------------------------------------------------------------------------- |
+| `/`               | All goals, newest edit first. **New goal** opens a dialog for the details.   |
+| `/goals/:goalId`  | One goal: its summary, and the timeline of weighted subtasks.                |
+
+The route owns which goal is on screen, so a goal's page is linkable and
+reloadable, and back/forward work as expected. Nothing in storage records a
+"current goal" — that would be a second source of truth able to disagree with
+the URL.
+
 ## Running it
 
 ```bash
@@ -61,6 +73,8 @@ src/
     storage.ts    GoalRepository + localStorage implementation
   store/
     useGoalStore.ts   Zustand store, the single source of truth
+    goalIdContext.ts  which goal a subtree edits
+  pages/        one per route
   components/   UI
   types.ts
 ```
@@ -68,7 +82,15 @@ src/
 The schedule is **derived, never stored**. `buildTimeline(goal)` is a pure
 function called during render, so dates can't fall out of step with the weights,
 order or duration they came from. Storage sits behind a `GoalRepository`
-interface, so replacing localStorage with an API is one new implementation.
+interface, so replacing localStorage with an API is one new implementation —
+and `createGoalStore(repository)` is exported for that reason, which is also how
+the store's tests run against memory instead of the browser.
+
+Every store action names the goal it applies to (`addSubtask(goalId, …)`), so
+no mutation can be aimed at whatever happened to be selected last, and an
+unknown id is a no-op rather than a crash. The components that call those
+actions sit several levels below the page that knows the id, so it travels by
+context (`useGoalId`) rather than as a prop through every layer.
 
 ## Notes on the implementation
 
@@ -84,3 +106,13 @@ interface, so replacing localStorage with an API is one new implementation.
   costs that field rather than the app.
 - **Writes are debounced** by 200ms and flushed on `pagehide`, so typing notes
   doesn't serialise the whole state on every keystroke.
+- **The new-goal dialog is a native `<dialog>`** opened with `showModal()`,
+  which brings focus trapping, Escape to dismiss, `inert` on the page behind it
+  and top-layer stacking without a focus-management implementation of our own.
+
+## Deploying
+
+`npm run build` emits a static `dist/`. Because routes are real paths rather
+than hashes, a static host needs the usual single-page rewrite — serve
+`index.html` for any unmatched path — or a deep link like `/goals/goal_abc` will
+404 on reload. `npm run dev` and `npm run preview` already do this.

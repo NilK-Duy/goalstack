@@ -1,5 +1,6 @@
 import { useId, useRef, useState } from 'react';
 import { useGoalStore } from '@/store/useGoalStore';
+import { useGoalId } from '@/store/goalIdContext';
 import { PlusIcon } from './icons';
 
 /**
@@ -8,6 +9,7 @@ import { PlusIcon } from './icons';
  * each one so the whole list can be typed without reaching for the mouse.
  */
 export function SubtaskComposer() {
+  const goalId = useGoalId();
   const addSubtask = useGoalStore((state) => state.addSubtask);
   const fieldId = useId();
   const titleRef = useRef<HTMLInputElement>(null);
@@ -23,7 +25,7 @@ export function SubtaskComposer() {
     event.preventDefault();
     if (!canSubmit) return;
 
-    addSubtask({ title, weight: parsedWeight });
+    addSubtask(goalId, { title, weight: parsedWeight });
     setTitle('');
     titleRef.current?.focus();
   };

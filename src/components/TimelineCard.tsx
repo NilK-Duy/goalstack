@@ -3,6 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import type { Granularity, TimelineItem } from '@/lib/schedule';
 import { formatDuration, formatRange, formatShare } from '@/lib/format';
 import { useGoalStore } from '@/store/useGoalStore';
+import { useGoalId } from '@/store/goalIdContext';
 import { ChevronIcon, GripIcon, LinkIcon, NoteIcon, TrashIcon } from './icons';
 import { SubtaskDetails } from './SubtaskDetails';
 
@@ -14,8 +15,9 @@ interface TimelineCardProps {
 }
 
 function WeightStepper({ subtaskId, weight }: { subtaskId: string; weight: number }) {
+  const goalId = useGoalId();
   const updateSubtask = useGoalStore((state) => state.updateSubtask);
-  const set = (next: number) => updateSubtask(subtaskId, { weight: Math.max(0, next) });
+  const set = (next: number) => updateSubtask(goalId, subtaskId, { weight: Math.max(0, next) });
 
   return (
     <div className="border-line bg-surface flex items-center gap-0.5 rounded-lg border p-0.5">
@@ -54,6 +56,7 @@ function WeightStepper({ subtaskId, weight }: { subtaskId: string; weight: numbe
 }
 
 export function TimelineCard({ item, granularity, unscheduled }: TimelineCardProps) {
+  const goalId = useGoalId();
   const removeSubtask = useGoalStore((state) => state.removeSubtask);
   const [expanded, setExpanded] = useState(false);
   const { subtask } = item;
@@ -175,7 +178,7 @@ export function TimelineCard({ item, granularity, unscheduled }: TimelineCardPro
 
           <button
             type="button"
-            onClick={() => removeSubtask(subtask.id)}
+            onClick={() => removeSubtask(goalId, subtask.id)}
             className="gs-icon-btn gs-icon-btn-danger h-7 w-7"
             aria-label={`Delete ${subtask.title}`}
           >
