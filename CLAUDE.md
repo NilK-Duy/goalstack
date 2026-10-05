@@ -96,6 +96,7 @@ Do not change these without an explicit instruction saying so.
     `noUnusedLocals`/`noUnusedParameters`; the build enforces it.
 12. **`src/lib/**` stays pure** — no React, no DOM, no store imports. Tests run
     in a Node environment and depend on it.
+13.. **Branch Management**: Before adding any features or fix bugs, always work on a new git branch. Never commit directly on main. Bug branches must follow naming convention bug/[des], feature branches follow naming convention feature/[des]
 
 Assume nothing about the user's timezone or locale: dates are formatted with
 `Intl` using the runtime default, and tests must stay timezone-independent.
